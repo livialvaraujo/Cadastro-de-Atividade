@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Atividade - UEMG</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            display: inline-block;
+            width: 50%;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #005B8A;
+            color: white;
+        }
+        button {
+            background-color: #d32f2f;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cadastro de Atividade</h1>
+        <form id="formCadastro">
+            <label>Descrição:</label>
+            <input type="text" id="descricao" required><br><br>
+            
+            <label>Categoria:</label>
+            <select id="categoria" required>
+                <option value="">Escolha uma categoria</option>
+                <option value="Ensino">Ensino</option>
+                <option value="Pesquisa">Pesquisa</option>
+                <option value="Extensão">Extensão</option>
+            </select><br><br>
+            
+            <label>Tipo Específico:</label>
+            <select id="tipo_especifico" required></select><br><br>
+            
+            <label>Horas:</label>
+            <input type="number" id="horas" required><br><br>
+            
+            <button type="submit">Cadastrar</button>
+        </form>
+        
+        <h2>Atividades Cadastradas</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Descrição</th>
+                    <th>Categoria</th>
+                    <th>Tipo</th>
+                    <th>Horas</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tabelaAtividades"></tbody>
+        </table>
+    </div>
+    
+    <script>
+        const tiposPorCategoria = {
+            'Ensino': [
+                'Estágio Extracurricular', 'Monitoria', 'Concursos e campeonatos acadêmicos', 'Presença em eventos', 'Defesa de TCC', 'Cursos Profissionalizantes'
+            ],
+            'Extensão': [
+                'Projeto de extensão', 'Atividades culturais', 'Visitas Técnicas', 'Visitas a Feiras e Exposições', 'Cursos de Idiomas', 'Palestras e Seminários', 'Projeto Empresa Júnior'
+            ],
+            'Pesquisa': [
+                'Iniciação Científica', 'Publicação de artigo', 'Participação em congresso', 'Projetos de Pesquisa'
+            ]
+        };
+        
+        document.getElementById('categoria').addEventListener('change', function() {
+            const tipoSelect = document.getElementById('tipo_especifico');
+            tipoSelect.innerHTML = '';
+            const tipos = tiposPorCategoria[this.value] || [];
+            tipos.forEach(tipo => {
+                const option = document.createElement('option');
+                option.value = tipo;
+                option.textContent = tipo;
+                tipoSelect.appendChild(option);
+            });
+        });
+        
+        document.addEventListener("DOMContentLoaded", carregarAtividades);
+        
+        document.getElementById("formCadastro").addEventListener("submit", function(event) {
+            event.preventDefault();
+            
+            let descricao = document.getElementById("descricao").value;
+            let categoria = document.getElementById("categoria").value;
+            let tipo = document.getElementById("tipo_especifico").value;
+            let horas = document.getElementById("horas").value;
+            
+            let atividade = { descricao, categoria, tipo, horas };
+            let atividades = JSON.parse(localStorage.getItem("atividades")) || [];
+            atividades.push(atividade);
+            localStorage.setItem("atividades", JSON.stringify(atividades));
+            
+            carregarAtividades();
+            document.getElementById("formCadastro").reset();
+        });
+        
+        function carregarAtividades() {
+            let atividades = JSON.parse(localStorage.getItem("atividades")) || [];
+            let tabela = document.getElementById("tabelaAtividades");
+            tabela.innerHTML = "";
+            
+            atividades.forEach((atividade, index) => {
+                let linha = tabela.insertRow();
+                linha.insertCell(0).textContent = atividade.descricao;
+                linha.insertCell(1).textContent = atividade.categoria;
+                linha.insertCell(2).textContent = atividade.tipo;
+                linha.insertCell(3).textContent = atividade.horas;
+                
+                let celulaAcao = linha.insertCell(4);
+                let botaoExcluir = document.createElement("button");
+                botaoExcluir.textContent = "Excluir";
+                botaoExcluir.onclick = function() { excluirAtividade(index); };
+                celulaAcao.appendChild(botaoExcluir);
+            });
+        }
+        
+        function excluirAtividade(index) {
+            let atividades = JSON.parse(localStorage.getItem("atividades")) || [];
+            atividades.splice(index, 1);
+            localStorage.setItem("atividades", JSON.stringify(atividades));
+            carregarAtividades();
+        }
+    </script>
+</body>
+</html>
